@@ -1,0 +1,32 @@
+name: IceRings
+version: ${project.version}
+main: top.sanscraft.icerings.IceRings
+api-version: 1.20
+author: SansNom
+description: A Spigot plugin for magical ice sphere generation
+
+softdepend: [WorldGuard]
+
+commands:
+  icerings:
+    description: Main command for IceRings plugin
+    usage: /<command> [help|reload|give|blocks <list|add|remove|inverse>]
+    permission: icerings.use
+    permission-message: You don't have permission to use this command!
+
+permissions:
+  icerings.*:
+    description: Gives access to all IceRings commands
+    children:
+      icerings.use: true
+      icerings.admin: true
+      icerings.give: true
+  icerings.use:
+    description: Allows basic usage of IceRings
+    default: true
+  icerings.admin:
+    description: Allows administrative commands
+    default: op
+  icerings.give:
+    description: Allows giving special ice to players
+    default: op

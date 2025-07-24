@@ -1,0 +1,82 @@
+# IceRings Configuration File
+# Plugin version: 1.0.0
+
+# General Settings
+general:
+  # Enable debug messages
+  debug: false
+  
+  # Plugin prefix for messages
+  prefix: "&b[IceRings]&r"
+
+# Ice Rings Settings
+ice-rings:
+  # Enable ice rings functionality
+  enabled: true
+  
+  # Radius of the ice sphere
+  sphere-radius: 5
+  
+  # Duration the sphere lasts in seconds
+  duration-seconds: 30
+  
+  # Inverse replaceable blocks behavior
+  # When false (default): Ice rings will ONLY replace blocks in the replaceable-blocks list
+  # When true: Ice rings will replace ALL blocks EXCEPT those in the replaceable-blocks list
+  inverse-replaceable-blocks: false
+  
+  # Blocks that ice rings can replace/go through
+  # The ice sphere will only place blocks in these positions (or avoid them if inverse is true)
+  # You can use specific block names (e.g., "AIR", "WATER") or partial matches (e.g., "GRASS" matches all grass types)
+  # Use /icerings blocks list to see current blocks, /icerings blocks add <block> to add, /icerings blocks remove <block> to remove
+  replaceable-blocks:
+    - "AIR"
+    - "WATER"
+    - "LAVA"
+    - "GRASS"
+    - "TALL_GRASS"
+    - "FERN"
+    - "LARGE_FERN"
+    - "DEAD_BUSH"
+    - "DANDELION"
+    - "POPPY"
+    - "BLUE_ORCHID"
+    - "ALLIUM"
+    - "AZURE_BLUET"
+    - "RED_TULIP"
+    - "ORANGE_TULIP"
+    - "WHITE_TULIP"
+    - "PINK_TULIP"
+    - "OXEYE_DAISY"
+    - "CORNFLOWER"
+    - "LILY_OF_THE_VALLEY"
+    - "SNOW"
+    - "VINE"
+    - "SEAGRASS"
+    - "TALL_SEAGRASS"
+    - "KELP"
+    - "KELP_PLANT"
+
+# WorldGuard Integration (soft dependency)
+worldguard:
+  # Enable WorldGuard region restrictions
+  enabled: true
+  
+  # List of regions where ice rings can be placed
+  # Leave empty to allow globally (if WorldGuard is installed)
+  allowed-regions: []
+  # Example: 
+  # allowed-regions:
+  #   - "spawn"
+  #   - "pvp-arena"
+  #   - "build-zone"
+
+# Messages
+messages:
+  no-permission: "&cYou don't have permission to use this command!"
+  plugin-reloaded: "&aIceRings configuration reloaded successfully!"
+  invalid-command: "&cInvalid command. Use /icerings help for available commands."
+  special-ice-given: "&aYou have been given &b{amount} &aspecial blue ice!"
+  ice-sphere-created: "&bIce sphere created! It will last for &e{duration} &bseconds."
+  region-not-allowed: "&cYou cannot place ice rings in this area!"
+  worldguard-not-found: "&eWorldGuard not detected. Ice rings work globally."
