@@ -1,43 +1,51 @@
-# TrappedTnt Spigot Plugin
+# IceRings Spigot Plugin
 
-A Minecraft Spigot plugin for trapped TNT functionality.
+A Minecraft Spigot plugin for magical ice sphere generation.
 
 ## Description
 
-TrappedTnt is a Spigot plugin that adds enhanced TNT functionality to your Minecraft server. Players can place special trapped TNT that starts fusing immediately and explodes either when the timer runs out or when a player steps too close!
+IceRings is a Spigot plugin that adds magical ice sphere functionality to your Minecraft server. Players can place special blue ice blocks that instantly create protective hollow ice spheres around the placement location!
 
 ## Features
 
-- **Special Trapped TNT**: Custom TNT items with unique properties and appearance
-- **Instant Fuse**: Trapped TNT starts fusing immediately when placed
-- **Proximity Detonation**: TNT explodes instantly when players get too close
+- **Special Blue Ice**: Custom blue ice items with unique properties and magical appearance
+- **Hollow Ice Spheres**: Creates beautiful hollow spheres of colored glass blocks
+- **Three-Stage Durability**: Ice blocks progress through three stages (Blue → Cyan → Light Blue) before breaking
+- **Configurable Replaceable Blocks**: Control which blocks can be replaced by ice spheres
+- **Inverse Block Mode**: Option to replace everything except specified blocks
 - **WorldGuard Integration**: Optional region restrictions for placement (soft dependency)
 - **Permission System**: Fine-grained control over who can use what features
-- **Configurable Settings**: Customize explosion power, timers, and behavior
-- **Admin Commands**: Give trapped TNT and manage the plugin
+- **Configurable Settings**: Customize sphere radius, duration, and block behavior
+- **Admin Commands**: Give special ice blocks and manage the plugin
 
 ## Commands
 
-- `/trappedtnt` - Show plugin information
-- `/trappedtnt help` - Display available commands
-- `/trappedtnt give [player] [amount]` - Give trapped TNT to a player (admin only)
-- `/trappedtnt reload` - Reload plugin configuration (admin only)
+- `/icerings` - Show plugin information
+- `/icerings help` - Display available commands
+- `/icerings give [player] [amount]` - Give special blue ice to a player (admin only)
+- `/icerings reload` - Reload plugin configuration (admin only)
+- `/icerings blocks list` - List current replaceable blocks and inverse mode status
+- `/icerings blocks add <block>` - Add a block to the replaceable blocks list
+- `/icerings blocks remove <block>` - Remove a block from the replaceable blocks list
+- `/icerings blocks inverse [true|false]` - Toggle inverse mode for replaceable blocks
 
 ## Permissions
 
-- `trappedtnt.use` - Basic plugin usage (default: true)
-- `trappedtnt.give` - Permission to give trapped TNT (default: op)
-- `trappedtnt.admin` - Administrative commands (default: op)
-- `trappedtnt.*` - All permissions
+- `icerings.use` - Basic plugin usage (default: true)
+- `icerings.give` - Permission to give special ice blocks (default: op)
+- `icerings.admin` - Administrative commands (default: op)
+- `icerings.*` - All permissions
 
 ## How It Works
 
-1. **Getting Trapped TNT**: Use `/trappedtnt give` to obtain special trapped TNT items
-2. **Placing**: Place the trapped TNT like regular TNT (respects WorldGuard regions if configured)
-3. **Immediate Fusing**: The TNT starts fusing immediately upon placement
-4. **Dual Trigger**: The TNT can explode in two ways:
-   - **Timer**: Normal explosion after the configured fuse time
-   - **Proximity**: Instant explosion when any player steps within the TNT's hitbox
+1. **Getting Special Blue Ice**: Use `/icerings give` to obtain magical ice ring generator items
+2. **Placing**: Place the special blue ice like regular blocks (respects WorldGuard regions if configured)
+3. **Instant Sphere Creation**: A hollow sphere of blue stained glass instantly forms around the placement location
+4. **Three-Stage Durability System**: 
+   - **Stage 1 (Blue Glass)**: Immune to most explosions, can be broken to advance to cyan
+   - **Stage 2 (Cyan Glass)**: Vulnerable to all explosions, can be broken to advance to light blue
+   - **Stage 3 (Light Blue Glass)**: Vulnerable to all explosions, breaks normally when hit
+5. **Automatic Cleanup**: Spheres automatically disappear after the configured duration
 
 ## Installation
 
@@ -75,19 +83,42 @@ The compiled JAR will be available in the `target` folder.
 The plugin creates a `config.yml` file with various settings:
 
 - **General Settings**: Debug mode, message prefix
-- **Trapped TNT Settings**: 
-  - Explosion power and block breaking
-  - Fuse timer duration
-  - Proximity explosion toggle
+- **Ice Rings Settings**: 
+  - Sphere radius and duration
+  - Replaceable blocks list (which blocks can be overridden)
+  - Inverse mode toggle (replace everything except listed blocks)
 - **WorldGuard Integration**:
   - Enable/disable region restrictions
   - Specify allowed regions for placement
 - **Custom Messages**: All player-facing messages are configurable
 
+### Replaceable Blocks System
+
+IceRings includes a flexible system for controlling which blocks can be replaced by ice spheres:
+
+**Normal Mode (default)**: Ice spheres will **only** replace blocks in the configured list
+```yaml
+inverse-replaceable-blocks: false
+replaceable-blocks:
+  - "AIR"
+  - "WATER"
+  - "GRASS"
+```
+
+**Inverse Mode**: Ice spheres will replace **all blocks except** those in the configured list
+```yaml
+inverse-replaceable-blocks: true
+replaceable-blocks:
+  - "BEDROCK"
+  - "OBSIDIAN"
+```
+
+Use partial matches for block families (e.g., "GRASS" matches all grass-related blocks).
+
 ### WorldGuard Integration
 
-TrappedTnt supports WorldGuard as a soft dependency:
-- **Not Installed**: Trapped TNT works globally
+IceRings supports WorldGuard as a soft dependency:
+- **Not Installed**: Ice rings work globally
 - **Installed + No Regions Configured**: Works globally
 - **Installed + Regions Configured**: Only works in specified regions
 
@@ -96,9 +127,9 @@ Example configuration:
 worldguard:
   enabled: true
   allowed-regions:
+    - "build-zone"
     - "pvp-arena"
-    - "minefield"
-    - "trap-zone"
+    - "creative-world"
 ```
 
 ## Contributing
