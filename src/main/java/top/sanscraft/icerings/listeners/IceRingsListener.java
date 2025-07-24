@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,8 @@ public class IceRingsListener implements Listener {
     private final Map<UUID, List<Location>> activeSpheres = new ConcurrentHashMap<>();
     // Map to store sphere metadata (owner, creation time, etc.)
     private final Map<UUID, SphereData> sphereMetadata = new ConcurrentHashMap<>();
+    // Map to store original block types for restoration when timer expires
+    private final Map<UUID, Map<Location, Material>> originalBlocks = new ConcurrentHashMap<>();
     
     public IceRingsListener(IceRings plugin) {
         this.plugin = plugin;
@@ -93,12 +96,14 @@ public class IceRingsListener implements Listener {
         // Generate unique ID for this sphere
         UUID sphereId = UUID.randomUUID();
         
-        // Create the hollow sphere
-        List<Location> sphereBlocks = iceRingsUtils.createHollowSphere(center, radius);
+        // Create the hollow sphere and get original block data
+        Map<Location, Material> sphereData = iceRingsUtils.createHollowSphereWithOriginals(center, radius);
+        List<Location> sphereBlocks = new ArrayList<>(sphereData.keySet());
         
         // Store sphere data
         activeSpheres.put(sphereId, sphereBlocks);
         sphereMetadata.put(sphereId, new SphereData(player.getUniqueId(), System.currentTimeMillis(), Material.BLUE_STAINED_GLASS));
+        originalBlocks.put(sphereId, sphereData);
         
         // Mark all blocks with metadata for identification
         for (Location blockLoc : sphereBlocks) {
@@ -110,7 +115,7 @@ public class IceRingsListener implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                removeSphere(sphereId);
+                removeSphereWithRestore(sphereId, true); // true = restore original blocks
             }
         }.runTaskLater(plugin, duration * 20L); // Convert seconds to ticks
     }
@@ -156,15 +161,22 @@ public class IceRingsListener implements Listener {
             location.getBlock().removeMetadata("ice_sphere_id", plugin);
             location.getBlock().removeMetadata("ice_sphere_stage", plugin);
             
-            // Remove this location from the sphere
+            // Remove this location from the sphere and original blocks map
             List<Location> sphereBlocks = activeSpheres.get(sphereId);
             if (sphereBlocks != null) {
                 sphereBlocks.remove(location);
+                
+                // Remove from original blocks map (so it won't be restored)
+                Map<Location, Material> originals = originalBlocks.get(sphereId);
+                if (originals != null) {
+                    originals.remove(location);
+                }
                 
                 // If sphere is empty, clean up
                 if (sphereBlocks.isEmpty()) {
                     activeSpheres.remove(sphereId);
                     sphereMetadata.remove(sphereId);
+                    originalBlocks.remove(sphereId);
                 }
             }
         }
@@ -200,13 +212,21 @@ public class IceRingsListener implements Listener {
                     block.removeMetadata("ice_sphere_id", plugin);
                     block.removeMetadata("ice_sphere_stage", plugin);
                     
-                    // Remove from active spheres
+                    // Remove from active spheres and original blocks
                     List<Location> sphereBlocks = activeSpheres.get(sphereId);
                     if (sphereBlocks != null) {
                         sphereBlocks.remove(block.getLocation());
+                        
+                        // Remove from original blocks map (so it won't be restored)
+                        Map<Location, Material> originals = originalBlocks.get(sphereId);
+                        if (originals != null) {
+                            originals.remove(block.getLocation());
+                        }
+                        
                         if (sphereBlocks.isEmpty()) {
                             activeSpheres.remove(sphereId);
                             sphereMetadata.remove(sphereId);
+                            originalBlocks.remove(sphereId);
                         }
                     }
                     
@@ -227,13 +247,21 @@ public class IceRingsListener implements Listener {
                 block.removeMetadata("ice_sphere_id", plugin);
                 block.removeMetadata("ice_sphere_stage", plugin);
                 
-                // Remove from active spheres
+                // Remove from active spheres and original blocks
                 List<Location> sphereBlocks = activeSpheres.get(sphereId);
                 if (sphereBlocks != null) {
                     sphereBlocks.remove(block.getLocation());
+                    
+                    // Remove from original blocks map (so it won't be restored)
+                    Map<Location, Material> originals = originalBlocks.get(sphereId);
+                    if (originals != null) {
+                        originals.remove(block.getLocation());
+                    }
+                    
                     if (sphereBlocks.isEmpty()) {
                         activeSpheres.remove(sphereId);
                         sphereMetadata.remove(sphereId);
+                        originalBlocks.remove(sphereId);
                     }
                 }
                 
@@ -245,7 +273,13 @@ public class IceRingsListener implements Listener {
     }
     
     private void removeSphere(UUID sphereId) {
+        removeSphereWithRestore(sphereId, false);
+    }
+    
+    private void removeSphereWithRestore(UUID sphereId, boolean restoreOriginals) {
         List<Location> sphereBlocks = activeSpheres.get(sphereId);
+        Map<Location, Material> originals = originalBlocks.get(sphereId);
+        
         if (sphereBlocks == null) {
             return;
         }
@@ -254,14 +288,24 @@ public class IceRingsListener implements Listener {
         for (Location location : sphereBlocks) {
             location.getBlock().removeMetadata("ice_sphere_id", plugin);
             location.getBlock().removeMetadata("ice_sphere_stage", plugin);
-            iceRingsUtils.removeSphere(List.of(location));
+        }
+        
+        if (restoreOriginals && originals != null) {
+            // Restore original blocks
+            iceRingsUtils.restoreOriginalBlocks(originals);
+            plugin.getLogger().info("Restored original blocks for ice sphere with ID: " + sphereId);
+        } else {
+            // Just remove the sphere blocks (set to air)
+            iceRingsUtils.removeSphere(sphereBlocks);
         }
         
         // Clean up maps
         activeSpheres.remove(sphereId);
         sphereMetadata.remove(sphereId);
+        originalBlocks.remove(sphereId);
         
-        plugin.getLogger().info("Removed ice sphere with ID: " + sphereId);
+        plugin.getLogger().info("Removed ice sphere with ID: " + sphereId + 
+            (restoreOriginals ? " (with restoration)" : " (without restoration)"));
     }
     
     /**
@@ -269,10 +313,11 @@ public class IceRingsListener implements Listener {
      */
     public void cleanup() {
         for (UUID sphereId : activeSpheres.keySet()) {
-            removeSphere(sphereId);
+            removeSphere(sphereId); // Don't restore on cleanup
         }
         activeSpheres.clear();
         sphereMetadata.clear();
+        originalBlocks.clear();
     }
     
     /**

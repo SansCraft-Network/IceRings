@@ -11,6 +11,7 @@ IceRings is a Spigot plugin that adds magical ice sphere functionality to your M
 - **Special Blue Ice**: Custom blue ice items with unique properties and magical appearance
 - **Hollow Ice Spheres**: Creates beautiful hollow spheres of colored glass blocks
 - **Three-Stage Durability**: Ice blocks progress through three stages (Blue → Cyan → Light Blue) before breaking
+- **Smart Block Restoration**: Original blocks are restored when timer expires (but not when manually broken)
 - **Configurable Replaceable Blocks**: Control which blocks can be replaced by ice spheres
 - **Inverse Block Mode**: Option to replace everything except specified blocks
 - **WorldGuard Integration**: Optional region restrictions for placement (soft dependency)
@@ -41,11 +42,15 @@ IceRings is a Spigot plugin that adds magical ice sphere functionality to your M
 1. **Getting Special Blue Ice**: Use `/icerings give` to obtain magical ice ring generator items
 2. **Placing**: Place the special blue ice like regular blocks (respects WorldGuard regions if configured)
 3. **Instant Sphere Creation**: A hollow sphere of blue stained glass instantly forms around the placement location
-4. **Three-Stage Durability System**: 
+4. **Block Replacement**: The plugin stores the original blocks that were replaced by the ice sphere
+5. **Three-Stage Durability System**: 
    - **Stage 1 (Blue Glass)**: Immune to most explosions, can be broken to advance to cyan
    - **Stage 2 (Cyan Glass)**: Vulnerable to all explosions, can be broken to advance to light blue
    - **Stage 3 (Light Blue Glass)**: Vulnerable to all explosions, breaks normally when hit
-5. **Automatic Cleanup**: Spheres automatically disappear after the configured duration
+6. **Smart Cleanup**: 
+   - **Timer Expiration**: Original blocks are automatically restored when the timer runs out
+   - **Manual Breaking**: Blocks broken by players are permanently removed (no restoration)
+   - **Explosion Damage**: Blocks destroyed by explosions are permanently removed (no restoration)
 
 ## Installation
 

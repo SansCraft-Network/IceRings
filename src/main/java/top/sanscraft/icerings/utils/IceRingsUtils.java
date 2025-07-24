@@ -14,6 +14,8 @@ import org.bukkit.plugin.Plugin;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class IceRingsUtils {
     
@@ -71,9 +73,10 @@ public class IceRingsUtils {
     
     /**
      * Creates a hollow sphere of blue stained glass around a center location
+     * Returns a map containing the sphere locations and their original block types
      */
-    public List<Location> createHollowSphere(Location center, int radius) {
-        List<Location> sphereBlocks = new ArrayList<>();
+    public Map<Location, Material> createHollowSphereWithOriginals(Location center, int radius) {
+        Map<Location, Material> sphereData = new HashMap<>();
         
         // Get replaceable blocks from config
         List<String> replaceableBlockNames = plugin.getConfig().getStringList("ice-rings.replaceable-blocks");
@@ -91,15 +94,27 @@ public class IceRingsUtils {
                         
                         // Check if current block can be replaced based on config and inverse mode
                         if (canReplaceBlock(block, replaceableBlockNames, inverseMode)) {
+                            // Store the original block type before replacing
+                            Material originalType = block.getType();
                             block.setType(Material.BLUE_STAINED_GLASS);
-                            sphereBlocks.add(blockLocation);
+                            sphereData.put(blockLocation, originalType);
                         }
                     }
                 }
             }
         }
         
-        return sphereBlocks;
+        return sphereData;
+    }
+    
+    /**
+     * Creates a hollow sphere of blue stained glass around a center location (legacy method)
+     * @deprecated Use createHollowSphereWithOriginals instead
+     */
+    @Deprecated
+    public List<Location> createHollowSphere(Location center, int radius) {
+        Map<Location, Material> sphereData = createHollowSphereWithOriginals(center, radius);
+        return new ArrayList<>(sphereData.keySet());
     }
     
     /**
@@ -149,6 +164,24 @@ public class IceRingsUtils {
                 block.getType() == Material.CYAN_STAINED_GLASS ||
                 block.getType() == Material.LIGHT_BLUE_STAINED_GLASS) {
                 block.setType(Material.AIR);
+            }
+        }
+    }
+    
+    /**
+     * Restores original blocks at the given locations with their original materials
+     */
+    public void restoreOriginalBlocks(Map<Location, Material> originalBlocks) {
+        for (Map.Entry<Location, Material> entry : originalBlocks.entrySet()) {
+            Location location = entry.getKey();
+            Material originalType = entry.getValue();
+            Block block = location.getBlock();
+            
+            // Only restore if the block is still an ice sphere block
+            if (block.getType() == Material.BLUE_STAINED_GLASS ||
+                block.getType() == Material.CYAN_STAINED_GLASS ||
+                block.getType() == Material.LIGHT_BLUE_STAINED_GLASS) {
+                block.setType(originalType);
             }
         }
     }
